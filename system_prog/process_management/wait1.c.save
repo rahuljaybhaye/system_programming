@@ -1,0 +1,46 @@
+#include<stdio.h>
+#include<sys/wait.h>		//* wait()
+//#include<sys/types.h>		//wait()
+#include<unistd.h>		//fork()
+#include<stdlib.h>		//exit()
+
+int main()
+{
+	int i = 1;
+	int val;
+	int *ptr = NULL;
+	int num;
+	pid_t pid;
+	int status;
+	pid = fork();
+	if(pid !=0 )
+	{
+		printf("parent process is under blocking\n");
+		printf("parent, fork return:%d\n",pid);
+		num = wait(&status);			//pid_t wait(int *statloc)
+		printf("return wait: %d\n",num);
+
+		if(WIFEXITED(status))
+			printf("if-parent: %d\n",WEXITSTATUS(status));
+		else
+			printf("else-parent: %d\n",WEXITSTATUS(status));
+
+		if(WIFSIGNALED(status))
+			printf("sig-if-parent: %d\n",WTERMSIG(status));
+
+		else
+			printf("sig-else-parent: %d\n",WTERMSIG(status));
+
+		printf("Parent is terminated \n");
+/*	}
+	else
+	{
+		printf("new child process is created \n");
+	//	*ptr = 20;
+	//	printf("%d\n",*ptr)	//	val = 1/0;
+		while(i)
+			printf("%d\t",i++);
+		printf("child process is terminated...\n");
+		exit(100);
+	}
+}

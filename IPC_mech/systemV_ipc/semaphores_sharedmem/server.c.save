@@ -1,0 +1,44 @@
+#include<sys/sem.h>	//semget(),semctl()#define KEY 199220
+ 
+main()
+{
+	char *shm;
+	int semid;
+	int shmid;
+	int ret;
+	struct sembuf smop;
+	semid = semget(KEY,2,IPC_CREAT|0640);
+	semctl(semid,0,SETVAL,0);	//First counter initialised with zero
+	semctl(semid,1,SETVAL,0);	//Second counter initialised with zero value
+
+	shmid = shmget(KEY,512,IPC_CREAT|0640); //To creat shared mem. of size 512 bytes
+
+	shm = shmat(shmid,NULL,0);	// To attched shared mem.
+
+	//TO block sever until client sent request(client writes data to shared mem)
+	smop.sem_num = 0;	// 1st semaphore( 0th index counter)
+	smop.sem_op = -1;	// Decrement operation
+	smop.sem_flags = 0;
+
+	smop(semid,&smop,1); //Try to perform decrement operation on counter of 1st semaphore if not then block until clients increment counter value
+
+//	after client writes data to shared mem.
+	printf("%p - %s \n",shm,shm);
+
+/*	for(i =0;shm[i]!='\0'; i++)
+	{
+		shm[i + 256] = toggle();
+	}
+	shm[i + 256] = '\0';
+*/
+	shm[256] = "RAHUL\0";
+
+// After writes the data to half of shared mem. then client should unblock to read that data
+//By  using increment 2nd semaphore value
+
+	smop.sem_num = 1 ;	// 2nd semaphore( 1st index counter)
+	smop.sem_op = +1;	//Increment operation on 2nd counter by one
+	smop.sem_flags = 0;
+	
+	smop(semid,&smop,1);
+}
